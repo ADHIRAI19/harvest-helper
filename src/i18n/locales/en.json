@@ -1,0 +1,133 @@
+{
+  "nav": {
+    "home": "Home",
+    "crops": "Crops",
+    "dashboard": "Dashboard",
+    "map": "Map",
+    "profile": "Profile"
+  },
+  "home": {
+    "tagline": "Plan your harvest. Maximize your profit.",
+    "subtitle": "Get real-time market prices, weather insights, and smart recommendations to sell your crops at the best time.",
+    "checkPrice": "Check Crop Price",
+    "calculateProfit": "Calculate Profit",
+    "features": {
+      "prices": {
+        "title": "Live Market Prices",
+        "desc": "Real-time prices from mandis across India"
+      },
+      "weather": {
+        "title": "Weather Insights",
+        "desc": "Forecast-based harvest recommendations"
+      },
+      "profit": {
+        "title": "Profit Calculator",
+        "desc": "Estimate your earnings before selling"
+      },
+      "alerts": {
+        "title": "Smart Alerts",
+        "desc": "Get notified about best selling times"
+      }
+    }
+  },
+  "crops": {
+    "title": "Select Your Crop",
+    "subtitle": "Choose a crop to view market prices and recommendations",
+    "search": "Search crops...",
+    "categories": {
+      "grains": "Grains",
+      "vegetables": "Vegetables",
+      "fruits": "Fruits",
+      "cashCrops": "Cash Crops",
+      "pulses": "Pulses"
+    }
+  },
+  "location": {
+    "title": "Select Market Location",
+    "subtitle": "Choose your state, district, and market",
+    "state": "Select State",
+    "district": "Select District",
+    "market": "Select Market",
+    "useLocation": "Use My Location",
+    "nearbyMandis": "Nearby Mandis",
+    "continue": "View Prices"
+  },
+  "dashboard": {
+    "title": "Price Dashboard",
+    "currentPrice": "Current Price",
+    "priceUnit": "₹/Quintal",
+    "estimatedProfit": "Estimated Profit",
+    "riskLevel": "Risk Level",
+    "demand": "Demand Level",
+    "trend": "Price Trend",
+    "days7": "7 Days",
+    "days15": "15 Days",
+    "days30": "30 Days",
+    "comparison": "Market Comparison",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "calculator": {
+      "title": "Profit Calculator",
+      "landArea": "Land Area (Acres)",
+      "seedCost": "Seed Cost (₹)",
+      "fertilizerCost": "Fertilizer Cost (₹)",
+      "laborCost": "Labor Cost (₹)",
+      "irrigationCost": "Irrigation Cost (₹)",
+      "otherCost": "Other Expenses (₹)",
+      "calculate": "Calculate Profit",
+      "totalCost": "Total Cost",
+      "expectedYield": "Expected Yield",
+      "grossRevenue": "Gross Revenue",
+      "netProfit": "Net Profit"
+    }
+  },
+  "weather": {
+    "title": "Weather Impact",
+    "subtitle": "How weather affects your harvest",
+    "temperature": "Temperature",
+    "rainfall": "Rainfall",
+    "humidity": "Humidity",
+    "wind": "Wind Speed",
+    "forecast": "5-Day Forecast",
+    "impact": {
+      "good": "Good conditions for harvest",
+      "caution": "Exercise caution",
+      "warning": "Unfavorable conditions"
+    }
+  },
+  "alerts": {
+    "title": "Alerts & Recommendations",
+    "subtitle": "Smart insights for your farming decisions",
+    "sellNow": "Good time to sell",
+    "wait": "Consider waiting",
+    "priceUp": "Price expected to rise",
+    "priceDown": "Price may decrease"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "guest": "Continue as Guest"
+  },
+  "voice": {
+    "listening": "Listening...",
+    "speak": "Tap to speak",
+    "examples": "Try: \"What is rice price today?\" or \"Best time to sell wheat?\""
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}
