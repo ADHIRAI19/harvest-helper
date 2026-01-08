@@ -5,6 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAppContext } from '@/hooks/useAppContext';
 import { cn } from '@/lib/utils';
+import { SUPPORTED_LANGUAGES, LanguageCode } from '@/i18n';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const navItems = [
   { path: '/', icon: Home, labelKey: 'nav.home' },
@@ -18,20 +25,16 @@ export const Navbar: React.FC = () => {
   const { t } = useTranslation();
   const { user, language, setLanguage } = useAppContext();
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'en' ? 'ta' : 'en');
-  };
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === language);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-card/80 backdrop-blur-md border-b border-border hidden md:block">
       <div className="container flex items-center justify-between h-16">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary">
           <span className="text-2xl">🌾</span>
           <span className="text-gradient">Harvest Planner</span>
         </Link>
 
-        {/* Navigation */}
         <nav className="flex items-center gap-1">
           {navItems.map(({ path, icon: Icon, labelKey }) => {
             const isActive = location.pathname === path;
@@ -53,17 +56,26 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
-        {/* Actions */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleLanguage}
-            className="gap-2"
-          >
-            <Languages className="h-4 w-4" />
-            <span className="font-medium">{language === 'en' ? 'தமிழ்' : 'English'}</span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Languages className="h-4 w-4" />
+                <span className="font-medium">{currentLang?.nativeName}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <DropdownMenuItem
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code as LanguageCode)}
+                  className={cn(language === lang.code && 'bg-accent')}
+                >
+                  {lang.nativeName}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {user ? (
             <Link to="/profile">
