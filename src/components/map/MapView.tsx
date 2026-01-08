@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import { Icon, LatLngTuple } from 'leaflet';
-import { useTranslation } from 'react-i18next';
 import { Market } from '@/data/locations';
 import { Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAppContext } from '@/hooks/useAppContext';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icon
@@ -53,6 +53,27 @@ const MapCenterUpdater: React.FC<{ center: LatLngTuple; zoom: number }> = ({ cen
   return null;
 };
 
+// Separate component for market popup content to avoid context issues
+const MarketPopupContent: React.FC<{
+  market: Market;
+  language: string;
+  cropName?: string;
+  currentPrice?: number;
+}> = ({ market, language, cropName, currentPrice }) => (
+  <div className="p-2 min-w-[150px]">
+    <p className="font-semibold text-foreground">
+      {language === 'ta' ? market.nameTa : market.name}
+    </p>
+    <p className="text-sm text-muted-foreground">{market.district}</p>
+    {cropName && currentPrice && (
+      <div className="mt-2 pt-2 border-t border-border">
+        <p className="text-xs text-muted-foreground">{cropName} Price</p>
+        <p className="font-bold text-primary">₹{currentPrice.toLocaleString()}/Qt</p>
+      </div>
+    )}
+  </div>
+);
+
 export const MapView: React.FC<MapViewProps> = ({
   markets,
   userLocation,
@@ -61,7 +82,7 @@ export const MapView: React.FC<MapViewProps> = ({
   cropName,
   currentPrice,
 }) => {
-  const { i18n } = useTranslation();
+  const { language } = useAppContext();
   const [showRoute, setShowRoute] = useState(false);
   const [routePoints, setRoutePoints] = useState<LatLngTuple[]>([]);
 
@@ -90,6 +111,12 @@ export const MapView: React.FC<MapViewProps> = ({
   const handleShowRoute = () => {
     setShowRoute(!showRoute);
   };
+
+  // Pre-compute market display names to avoid context issues in Popup
+  const marketDisplayNames = markets.reduce((acc, market) => {
+    acc[market.name] = language === 'ta' ? market.nameTa : market.name;
+    return acc;
+  }, {} as Record<string, string>);
 
   return (
     <div className="relative w-full h-full rounded-xl overflow-hidden shadow-medium">
@@ -130,7 +157,7 @@ export const MapView: React.FC<MapViewProps> = ({
             <Popup>
               <div className="p-2 min-w-[150px]">
                 <p className="font-semibold text-foreground">
-                  {i18n.language === 'ta' ? market.nameTa : market.name}
+                  {marketDisplayNames[market.name]}
                 </p>
                 <p className="text-sm text-muted-foreground">{market.district}</p>
                 {cropName && currentPrice && (
