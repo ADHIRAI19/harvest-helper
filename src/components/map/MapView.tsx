@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import { Icon, LatLngTuple } from 'leaflet';
-import { Market } from '@/data/locations';
-import { Navigation } from 'lucide-react';
+import { Mandi } from '@/data/mandis';
+import { Navigation, Clock, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAppContext } from '@/hooks/useAppContext';
 import 'leaflet/dist/leaflet.css';
@@ -36,10 +36,10 @@ const selectedIcon = new Icon({
 });
 
 interface MapViewProps {
-  markets: Market[];
+  mandis: Mandi[];
   userLocation?: { lat: number; lng: number } | null;
-  selectedMarket?: Market | null;
-  onMarketSelect?: (market: Market) => void;
+  selectedMandi?: Mandi | null;
+  onMandiSelect?: (mandi: Mandi) => void;
   cropName?: string;
   currentPrice?: number;
 }
@@ -53,32 +53,32 @@ const MapCenterUpdater: React.FC<{ center: LatLngTuple; zoom: number }> = ({ cen
   return null;
 };
 
-// Separate component for market popup content to avoid context issues
-const MarketPopupContent: React.FC<{
-  market: Market;
-  language: string;
-  cropName?: string;
-  currentPrice?: number;
-}> = ({ market, language, cropName, currentPrice }) => (
-  <div className="p-2 min-w-[150px]">
-    <p className="font-semibold text-foreground">
-      {language === 'ta' ? market.nameTa : market.name}
-    </p>
-    <p className="text-sm text-muted-foreground">{market.district}</p>
-    {cropName && currentPrice && (
-      <div className="mt-2 pt-2 border-t border-border">
-        <p className="text-xs text-muted-foreground">{cropName} Price</p>
-        <p className="font-bold text-primary">₹{currentPrice.toLocaleString()}/Qt</p>
-      </div>
-    )}
-  </div>
-);
+// Calculate distance between two points
+const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+};
+
+// Estimate travel time (assuming 40 km/h average speed for rural roads)
+const estimateTravelTime = (distanceKm: number): string => {
+  const hours = distanceKm / 40;
+  if (hours < 1) {
+    return `${Math.round(hours * 60)} min`;
+  }
+  return `${Math.floor(hours)}h ${Math.round((hours % 1) * 60)}m`;
+};
 
 export const MapView: React.FC<MapViewProps> = ({
-  markets,
+  mandis,
   userLocation,
-  selectedMarket,
-  onMarketSelect,
+  selectedMandi,
+  onMandiSelect,
   cropName,
   currentPrice,
 }) => {
@@ -90,33 +90,32 @@ export const MapView: React.FC<MapViewProps> = ({
   const defaultCenter: LatLngTuple = [20.5937, 78.9629];
   const center: LatLngTuple = userLocation
     ? [userLocation.lat, userLocation.lng]
-    : selectedMarket
-    ? [selectedMarket.lat, selectedMarket.lng]
+    : selectedMandi
+    ? [selectedMandi.lat, selectedMandi.lng]
     : defaultCenter;
 
-  const zoom = userLocation || selectedMarket ? 10 : 5;
+  const zoom = userLocation || selectedMandi ? 10 : 5;
 
   // Generate simple route (straight line for demo)
   useEffect(() => {
-    if (showRoute && userLocation && selectedMarket) {
+    if (showRoute && userLocation && selectedMandi) {
       setRoutePoints([
         [userLocation.lat, userLocation.lng],
-        [selectedMarket.lat, selectedMarket.lng],
+        [selectedMandi.lat, selectedMandi.lng],
       ]);
     } else {
       setRoutePoints([]);
     }
-  }, [showRoute, userLocation, selectedMarket]);
+  }, [showRoute, userLocation, selectedMandi]);
 
   const handleShowRoute = () => {
     setShowRoute(!showRoute);
   };
 
-  // Pre-compute market display names to avoid context issues in Popup
-  const marketDisplayNames = markets.reduce((acc, market) => {
-    acc[market.name] = language === 'ta' ? market.nameTa : market.name;
-    return acc;
-  }, {} as Record<string, string>);
+  // Calculate distance for selected mandi
+  const selectedDistance = userLocation && selectedMandi
+    ? calculateDistance(userLocation.lat, userLocation.lng, selectedMandi.lat, selectedMandi.lng)
+    : null;
 
   return (
     <div className="relative w-full h-full rounded-xl overflow-hidden shadow-medium">
@@ -144,32 +143,59 @@ export const MapView: React.FC<MapViewProps> = ({
           </Marker>
         )}
 
-        {/* Market Markers */}
-        {markets.map((market) => (
-          <Marker
-            key={market.name}
-            position={[market.lat, market.lng]}
-            icon={selectedMarket?.name === market.name ? selectedIcon : defaultIcon}
-            eventHandlers={{
-              click: () => onMarketSelect?.(market),
-            }}
-          >
-            <Popup>
-              <div className="p-2 min-w-[150px]">
-                <p className="font-semibold text-foreground">
-                  {marketDisplayNames[market.name]}
-                </p>
-                <p className="text-sm text-muted-foreground">{market.district}</p>
-                {cropName && currentPrice && (
-                  <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-xs text-muted-foreground">{cropName} Price</p>
-                    <p className="font-bold text-primary">₹{currentPrice.toLocaleString()}/Qt</p>
+        {/* Mandi Markers */}
+        {mandis.map((mandi) => {
+          const distance = userLocation 
+            ? calculateDistance(userLocation.lat, userLocation.lng, mandi.lat, mandi.lng)
+            : null;
+          const travelTime = distance ? estimateTravelTime(distance) : null;
+          
+          return (
+            <Marker
+              key={mandi.id}
+              position={[mandi.lat, mandi.lng]}
+              icon={selectedMandi?.id === mandi.id ? selectedIcon : defaultIcon}
+              eventHandlers={{
+                click: () => onMandiSelect?.(mandi),
+              }}
+            >
+              <Popup>
+                <div className="p-2 min-w-[180px]">
+                  <p className="font-semibold text-foreground">
+                    {language === 'ta' ? mandi.nameTa : mandi.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{mandi.district}, {mandi.state}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{mandi.type} Market</p>
+                  
+                  {distance && (
+                    <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border">
+                      <span className="flex items-center gap-1 text-xs">
+                        <MapPin className="h-3 w-3" />
+                        {distance.toFixed(1)} km
+                      </span>
+                      <span className="flex items-center gap-1 text-xs">
+                        <Clock className="h-3 w-3" />
+                        {travelTime}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {cropName && currentPrice && (
+                    <div className="mt-2 pt-2 border-t border-border">
+                      <p className="text-xs text-muted-foreground">{cropName} Price</p>
+                      <p className="font-bold text-primary">₹{currentPrice.toLocaleString()}/Qt</p>
+                    </div>
+                  )}
+                  
+                  <div className="mt-2">
+                    <p className="text-xs text-muted-foreground">Major Crops:</p>
+                    <p className="text-xs font-medium">{mandi.majorCrops.slice(0, 3).join(', ')}</p>
                   </div>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
 
         {/* Route Line */}
         {routePoints.length > 0 && (
@@ -182,8 +208,25 @@ export const MapView: React.FC<MapViewProps> = ({
         )}
       </MapContainer>
 
+      {/* Route Info Panel */}
+      {userLocation && selectedMandi && selectedDistance && (
+        <div className="absolute top-4 left-4 z-[1000] bg-card/95 backdrop-blur-sm rounded-lg p-3 shadow-lg max-w-xs">
+          <p className="font-semibold text-sm">{language === 'ta' ? selectedMandi.nameTa : selectedMandi.name}</p>
+          <div className="flex items-center gap-4 mt-1">
+            <span className="flex items-center gap-1 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              {selectedDistance.toFixed(1)} km
+            </span>
+            <span className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              {estimateTravelTime(selectedDistance)}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Route Button */}
-      {userLocation && selectedMarket && (
+      {userLocation && selectedMandi && (
         <Button
           onClick={handleShowRoute}
           className="absolute bottom-4 right-4 z-[1000] gap-2 shadow-lg"

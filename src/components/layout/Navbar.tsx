@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useAppContext } from '@/hooks/useAppContext';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, LanguageCode } from '@/i18n';
+import logo from '@/assets/logo.jpeg';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,8 +31,8 @@ export const Navbar: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-card/80 backdrop-blur-md border-b border-border hidden md:block">
       <div className="container flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-          <span className="text-2xl">🌾</span>
+        <Link to="/" className="flex items-center gap-3 font-bold text-xl text-primary">
+          <img src={logo} alt="Harvest Planner" className="h-10 w-10 rounded-lg object-cover" />
           <span className="text-gradient">Harvest Planner</span>
         </Link>
 
